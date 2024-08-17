@@ -1,24 +1,32 @@
 alert("Turister.com\n\n¡El mejor aliado para tus vacaciones!");
 
-let fechadehoy = new Date("2024-08-01");
-fechadehoy.toLocaleString();
+const container = document.getElementById("container");
 
 class Destino {
-    constructor(destino, duracionyhotel, fechas, precio) {
+    constructor(destino, duracion, tipoDeHotel, temporada, precio) {
         this.destino = destino;
-        this.duracionyhotel = duracionyhotel;
-        this.fechas = fechas;
+        this.duracion = duracion;
+        this.tipoDeHotel = tipoDeHotel;
+        this.temporada = temporada;
         this.precio = precio;
+    }
+
+    getResumen() {
+        return `${this.destino}: ${this.duracion} días, ${this.tipoDeHotel}. Temporada: ${this.temporada}. Precio: USD ${this.precio}`;
     }
 }
 
 const destinos = [
-    new Destino("Dubai", "14 días, desayuno incluido", "Octubre - Noviembre", 3500),
-    new Destino("Paris", "15 días, desayuno incluido", "Marzo - Abril", 3300),
-    new Destino("Londres", "12 días, desayuno incluido", "Febrero - Abril", 3700),
-    new Destino("Rio de Janeiro", "14 días, desayuno incluido", "Diciembre - Abril", 2500)
+    new Destino("Dubai", 14, "Desayuno incluido", "Octubre - Noviembre", 3500),
+    new Destino("Paris", 15, "Desayuno Incluido", "Marzo - Abril", 3300),
+    new Destino("Londres", 12, "Desayuno Incluido", "Febrero - Abril", 3700),
+    new Destino("Rio de Janeiro", 14, "Desayuno Incluido", "Diciembre - Abril", 2500),
+    new Destino("Cancún", 14, "All Inclusive", "Diciembre - Enero", 3800),
+    new Destino("Bariloche", 10, "Media Pensión", "Julio - Septiembre", 1500),
+    new Destino("Iguazu", 6, "Media Pensión", "Mayo - Agosto", 1200),
 ];
 
+// Clase Adicional
 class Adicional {
     constructor(tipodeadicional, preciodeadicional) {
         this.tipodeadicional = tipodeadicional;
@@ -37,183 +45,107 @@ let carrito = {
     adicionales: []
 };
 
-function solicitarEdad() {
-    return parseInt(prompt("Por favor, ingresa tu edad:"));
+function crearCard(destino) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.id = `Destino-${destino.destino}`;
+
+    const titulo = document.createElement("h3");
+    titulo.innerText = destino.destino;
+
+    const duracion = document.createElement("p");
+    duracion.innerText = `Duración: ${destino.duracion} días`;
+
+    const tipoDeHotel = document.createElement("p");
+    tipoDeHotel.innerText = `Tipo de hotel: ${destino.tipoDeHotel}`;
+
+    const temporada = document.createElement("p");
+    temporada.innerText = `Temporada: ${destino.temporada}`;
+
+    const valor = document.createElement("p");
+    valor.innerText = `Precio: USD ${destino.precio}`;
+
+    const agregarAcesta = document.createElement("button");
+    agregarAcesta.innerText = "Agregar a cesta";
+    agregarAcesta.addEventListener("click", () => agregarDestinoACesta(destino));
+
+    card.append(titulo, duracion, tipoDeHotel, temporada, valor, agregarAcesta);
+
+    container.append(card);
 }
 
-function verificarMayorDeEdad(edad) {
-    return edad >= 18;
+function agregarDestinoACesta(destino) {
+    carrito.destino = destino;
+    actualizarCarrito();
+    alert(`Destino ${destino.destino} agregado a la cesta.`);
 }
 
-function solicitarNombre() {
-    return prompt("Eres mayor de edad.\n\nIndícanos tu nombre:");
-}
-
-function mostrarMensajeBienvenida(nombre) {
-    alert("¡Te damos la bienvenida a Turister " + nombre + "!");
-}
-
-function mostrarMenu(nombre) {
-    alert("A continuación " + nombre + " te indicaremos nuestras opciones de destinos, costos de financiación y adicionales que tenemos disponibles para tus vacaciones.");
-}
-
-function seleccionarOpcion() {
-    return parseInt(prompt("Menú de opciones\n\n1. Dubai\n2. Paris\n3. Londres\n4. Rio de Janeiro\n5. Calcular valor de financiación con nuestro recargo del 71%\n6. Avanzar con el menú de adicionales\n7. Ver carrito\n8. Consultar otras opciones\n\nPara salir, ingrese 0"));
-}
-
-function mostrarInformacionDestino(destinoSeleccionado) {
-    let mensaje = `${destinoSeleccionado.destino} 2024/2025 - Vuelo + Hotel:\n\n${destinoSeleccionado.duracionyhotel}\n${destinoSeleccionado.fechas}\nUSD ${destinoSeleccionado.precio} (Base Doble)`;
-
-    const cuotas6 = (destinoSeleccionado.precio * 1.71 / 6).toFixed(2);
-    const cuotas12 = (destinoSeleccionado.precio * 1.71 / 12).toFixed(2);
-    mensaje += `\n\nCosto en 6 cuotas: USD ${cuotas6} por cuota.\nCosto en 12 cuotas: USD ${cuotas12} por cuota.`;
-    alert(mensaje);
-}
-
-function calcularFinanciacion() {
-    const ValorAFinanciar = parseFloat(prompt("Ingrese el monto a financiar en 12 cuotas"));
-    const valorTotal = (ValorAFinanciar * 1.71).toFixed(2);
-    alert("El valor total de financiación es de USD " + valorTotal);
-}
-
-function seleccionarAdicionales() {
-    carrito.adicionales = [];
-
-    let menuAdicionales = "Selecciona el tipo de adicional que deseas agregar:\n";
-    adicionales.forEach((adicional, index) => {
-        menuAdicionales += `${index + 1}. ${adicional.tipodeadicional} (USD ${adicional.preciodeadicional} cada uno)\n`;
-    });
-    menuAdicionales += "Para salir, ingrese 0";
-
-    let opcionAdicional;
-    do {
-        opcionAdicional = parseInt(prompt(menuAdicionales));
-
-        if (opcionAdicional > 0 && opcionAdicional <= adicionales.length) {
-            const adicionalSeleccionado = adicionales[opcionAdicional - 1];
-            const cantidad = parseInt(prompt(`¿Cuántos ${adicionalSeleccionado.tipodeadicional} desea añadir? (USD ${adicionalSeleccionado.preciodeadicional} cada uno)`));
-            
-            if (isNaN(cantidad) || cantidad < 0) {
-                alert("Cantidad inválida, se considerará 0.");
-                cantidad = 0;
-            }
-            
-            if (cantidad > 0) {
-                carrito.adicionales.push({
-                    tipodeadicional: adicionalSeleccionado.tipodeadicional,
-                    cantidad: cantidad,
-                    preciodeadicional: adicionalSeleccionado.preciodeadicional
-                });
-            }
-        } else if (opcionAdicional !== 0) {
-            alert("Opción inválida. Ingresa una opción válida.");
-        }
-    } while (opcionAdicional !== 0);
-
-    // Calcular el costo total usando reduce
-    const totalAdicionales = carrito.adicionales.reduce((total, adicional) => {
-        return total + (adicional.cantidad * adicional.preciodeadicional);
-    }, 0);
-
-    alert(`El costo total de los adicionales seleccionados es de USD ${totalAdicionales.toFixed(2)}`);
-    return totalAdicionales;
-}
-
-function mostrarCarrito() {
-    let mensaje = "Resumen de tu carrito:\n\n";
+function actualizarCarrito() {
+    const carritoContainer = document.getElementById("carrito");
+    carritoContainer.innerHTML = "";
 
     if (carrito.destino) {
-        mensaje += `Destino seleccionado:\n${carrito.destino.destino}\nUSD ${carrito.destino.precio}\n\n`;
-    } else {
-        mensaje += "No has seleccionado un destino.\n\n";
+        const destinoSeleccionado = document.createElement("p");
+        destinoSeleccionado.innerText = `Destino: ${carrito.destino.getResumen()}`;
+        carritoContainer.append(destinoSeleccionado);
     }
 
     if (carrito.adicionales.length > 0) {
-        mensaje += "Adicionales:\n";
+        const adicionalesSeleccionados = document.createElement("ul");
         carrito.adicionales.forEach(adicional => {
-            mensaje += `${adicional.cantidad} x ${adicional.tipodeadicional} (USD ${adicional.preciodeadicional} cada uno)\n`;
+            const adicionalItem = document.createElement("li");
+            adicionalItem.innerText = `${adicional.cantidad} x ${adicional.tipodeadicional} (USD ${adicional.preciodeadicional} cada uno)`;
+            adicionalesSeleccionados.append(adicionalItem);
         });
-    } else {
-        mensaje += "No has seleccionado adicionales.\n";
+        carritoContainer.append(adicionalesSeleccionados);
     }
 
-    alert(mensaje);
-}
-
-function buscarCoincidencias() {
-    let tipoBusqueda = prompt("¿Qué deseas buscar?\n1. Destinos\n2. Adicionales");
-
-    if (tipoBusqueda === '1') {
-        let buscarDestino = prompt("Ingrese el nombre del destino que desea buscar:");
-        const resultadoDestino = destinos.find(destino => destino.destino.toLowerCase().includes(buscarDestino.toLowerCase()));
-        if (resultadoDestino) {
-            alert(`Destino encontrado:\n${resultadoDestino.destino}\n${resultadoDestino.duracionyhotel}\n${resultadoDestino.fechas}\nUSD ${resultadoDestino.precio}`);
-        } else {
-            alert("Destino no encontrado.");
-        }
-    } else if (tipoBusqueda === '2') {
-        let buscarAdicional = prompt("Ingrese el tipo de adicional que desea buscar:");
-        const resultadoAdicional = adicionales.find(adicional => adicional.tipodeadicional.toLowerCase().includes(buscarAdicional.toLowerCase()));
-        if (resultadoAdicional) {
-            alert(`Adicional encontrado:\n${resultadoAdicional.tipodeadicional}\nUSD ${resultadoAdicional.preciodeadicional}`);
-        } else {
-            alert("Adicional no encontrado.");
-        }
-    } else {
-        alert("Opción inválida.");
+    if (!carrito.destino && carrito.adicionales.length === 0) {
+        carritoContainer.innerText = "El carrito está vacío.";
     }
 }
 
-function iniciarProceso() {
-    const edad = solicitarEdad();
+function mostrarAdicionales() {
+    const adicionalesContainer = document.getElementById("adicionales");
+    adicionalesContainer.innerHTML = "";
 
-    if (verificarMayorDeEdad(edad)) {
-        const nombre = solicitarNombre();
-        mostrarMensajeBienvenida(nombre);
-        mostrarMenu(nombre);
+    adicionales.forEach((adicional, index) => {
+        const adicionalDiv = document.createElement("div");
 
-        let opcion;
-        let destinoSeleccionado = null;
+        const label = document.createElement("label");
+        label.innerText = `${adicional.tipodeadicional} (USD ${adicional.preciodeadicional})`;
 
-        do {
-            opcion = seleccionarOpcion();
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = 0;
+        input.value = 0;
+        input.addEventListener("change", () => {
+            agregarAdicional(index, parseInt(input.value));
+        });
 
-            switch (opcion) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                    destinoSeleccionado = destinos[opcion - 1];
-                    mostrarInformacionDestino(destinoSeleccionado);
-                    carrito.destino = destinoSeleccionado;
-                    break;
-                case 5:
-                    calcularFinanciacion();
-                    break;
-                case 6:
-                    if (destinoSeleccionado) {
-                        seleccionarAdicionales();
-                    } else {
-                        alert("Seleccione primero un destino.");
-                    }
-                    break;
-                case 7:
-                    mostrarCarrito();
-                    break;
-                case 8:
-                    buscarCoincidencias();
-                    break;
-                default:
-                    if (opcion !== 0) {
-                        alert("Opción inválida. Ingresa una opción válida");
-                    }
-                    break;
-            }
-        } while (opcion !== 0);
-    } else {
-        alert("Eres menor de 18 años. No puedes avanzar.");
-    }
+        adicionalDiv.append(label, input);
+        adicionalesContainer.append(adicionalDiv);
+    });
 }
 
-iniciarProceso();
+function agregarAdicional(index, cantidad) {
+    if (cantidad > 0) {
+        carrito.adicionales[index] = {
+            ...adicionales[index],
+            cantidad: cantidad
+        };
+    } else {
+        carrito.adicionales.splice(index, 1);
+    }
+    actualizarCarrito();
+}
 
+function inicializarInterfaz() {
+    destinos.forEach(crearCard);
+    mostrarAdicionales();
+    actualizarCarrito();
+}
+
+window.onload = () => {
+    inicializarInterfaz();
+};
