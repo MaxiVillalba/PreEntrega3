@@ -1,20 +1,35 @@
-alert("Turister.com\n\n¡El mejor aliado para tus vacaciones!");
-
-const container = document.getElementById("container");
+const containerUno = document.getElementById("containeruno");
+const containerDos = document.getElementById("containerdos");
+const carritoContainer = document.getElementById("carrito-items");
+const carritoVacioMsg = document.getElementById("carrito-vacio");
 
 class Destino {
-    constructor(destino, duracion, tipoDeHotel, temporada, precio) {
+    constructor(destino, duracion, tipoDeHotel, temporada, precio, imagen) {
         this.destino = destino;
         this.duracion = duracion;
         this.tipoDeHotel = tipoDeHotel;
         this.temporada = temporada;
         this.precio = precio;
+        this.imagen = imagen;
     }
 
     getResumen() {
         return `${this.destino}: ${this.duracion} días, ${this.tipoDeHotel}. Temporada: ${this.temporada}. Precio: USD ${this.precio}`;
     }
 }
+
+class Adicional {
+    constructor(tipodeadicional, preciodeadicional, imagen) {
+        this.tipodeadicional = tipodeadicional;
+        this.preciodeadicional = preciodeadicional;
+        this.imagen = imagen;
+    }
+
+    getResumen() {
+        return `${this.tipodeadicional}: USD ${this.preciodeadicional}`;
+    }
+}
+
 
 const destinos = [
     new Destino("Dubai", 14, "Desayuno incluido", "Octubre - Noviembre", 3500),
@@ -26,126 +41,149 @@ const destinos = [
     new Destino("Iguazu", 6, "Media Pensión", "Mayo - Agosto", 1200),
 ];
 
-// Clase Adicional
-class Adicional {
-    constructor(tipodeadicional, preciodeadicional) {
-        this.tipodeadicional = tipodeadicional;
-        this.preciodeadicional = preciodeadicional;
-    }
-}
-
 const adicionales = [
-    new Adicional("Seguro de viaje por persona y día", 10),
-    new Adicional("Alquiler de auto por día", 45),
-    new Adicional("Traslados internos por persona y día", 15)
+    new Adicional("Seguro de viaje", 100),
+    new Adicional("Alquiler de auto", 150),
+    new Adicional("Traslados internos", 50),
+    new Adicional("Parque de diversiones", 70),
+    new Adicional("Paseo en lancha", 30),
+    new Adicional("Servicio de conserje", 20),
+    new Adicional("Entradas para recital", 60),
 ];
 
-let carrito = {
+let carrito = JSON.parse(localStorage.getItem('carrito')) || {
     destino: null,
     adicionales: []
 };
 
-function crearCard(destino) {
+const crearCardDestino = destino => {
     const card = document.createElement("div");
     card.className = "card";
     card.id = `Destino-${destino.destino}`;
 
-    const titulo = document.createElement("h3");
-    titulo.innerText = destino.destino;
+    card.innerHTML = `
+        <img src="${destino.imagen}" alt="${destino.destino}" class="card-img">
+        <h3>${destino.destino}</h3>
+        <p>Duración: ${destino.duracion} días</p>
+        <p>Tipo de hotel: ${destino.tipoDeHotel}</p>
+        <p>Temporada: ${destino.temporada}</p>
+        <p>Precio: USD ${destino.precio}</p>
+        <button>Agregar a cesta</button>
+    `;
 
-    const duracion = document.createElement("p");
-    duracion.innerText = `Duración: ${destino.duracion} días`;
-
-    const tipoDeHotel = document.createElement("p");
-    tipoDeHotel.innerText = `Tipo de hotel: ${destino.tipoDeHotel}`;
-
-    const temporada = document.createElement("p");
-    temporada.innerText = `Temporada: ${destino.temporada}`;
-
-    const valor = document.createElement("p");
-    valor.innerText = `Precio: USD ${destino.precio}`;
-
-    const agregarAcesta = document.createElement("button");
-    agregarAcesta.innerText = "Agregar a cesta";
-    agregarAcesta.addEventListener("click", () => agregarDestinoACesta(destino));
-
-    card.append(titulo, duracion, tipoDeHotel, temporada, valor, agregarAcesta);
-
-    container.append(card);
+    card.querySelector("button").addEventListener("click", () => agregarDestinoACesta(destino));
+    containerUno.append(card);
 }
 
-function agregarDestinoACesta(destino) {
+const crearCardAdicional = adicional => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.id = `Adicional-${adicional.tipodeadicional}`;
+
+    card.innerHTML = `
+        <img src="${adicional.imagen}" alt="${adicional.tipodeadicional}" class="card-img">
+        <h3>${adicional.tipodeadicional}</h3>
+        <p>Precio: USD ${adicional.preciodeadicional}</p>
+        <button>Agregar a cesta</button>
+    `;
+
+    card.querySelector("button").addEventListener("click", () => agregarAdicionalACesta(adicional));
+    containerDos.append(card);
+}
+
+const actualizarCarrito = () => {
+    carritoContainer.innerHTML = '';
+    const { destino, adicionales } = carrito;
+
+    if (!destino && adicionales.length === 0) {
+        carritoVacioMsg.style.display = "block";
+    } else {
+        carritoVacioMsg.style.display = "none";
+
+        if (destino) {
+            const li = document.createElement('li');
+            li.textContent = destino.getResumen();
+            carritoContainer.append(li);
+        }
+
+        adicionales.forEach(adicional => {
+            const li = document.createElement('li');
+            li.textContent = adicional.getResumen();
+            carritoContainer.append(li);
+        });
+    }
+
+    console.log("Carrito actualizado:", carrito);
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+}
+
+const agregarDestinoACesta = destino => {
     carrito.destino = destino;
     actualizarCarrito();
-    alert(`Destino ${destino.destino} agregado a la cesta.`);
+    Swal.fire('Destino agregado', destino.destino, 'success');
 }
 
-function actualizarCarrito() {
-    const carritoContainer = document.getElementById("carrito");
-    carritoContainer.innerHTML = "";
-
-    if (carrito.destino) {
-        const destinoSeleccionado = document.createElement("p");
-        destinoSeleccionado.innerText = `Destino: ${carrito.destino.getResumen()}`;
-        carritoContainer.append(destinoSeleccionado);
-    }
-
-    if (carrito.adicionales.length > 0) {
-        const adicionalesSeleccionados = document.createElement("ul");
-        carrito.adicionales.forEach(adicional => {
-            const adicionalItem = document.createElement("li");
-            adicionalItem.innerText = `${adicional.cantidad} x ${adicional.tipodeadicional} (USD ${adicional.preciodeadicional} cada uno)`;
-            adicionalesSeleccionados.append(adicionalItem);
-        });
-        carritoContainer.append(adicionalesSeleccionados);
-    }
-
-    if (!carrito.destino && carrito.adicionales.length === 0) {
-        carritoContainer.innerText = "El carrito está vacío.";
-    }
+const agregarAdicionalACesta = adicional => {
+    carrito.adicionales.push(adicional);
+    actualizarCarrito();
+    Swal.fire('Adicional agregado', adicional.tipodeadicional, 'success');
 }
 
-function mostrarAdicionales() {
-    const adicionalesContainer = document.getElementById("adicionales");
-    adicionalesContainer.innerHTML = "";
-
-    adicionales.forEach((adicional, index) => {
-        const adicionalDiv = document.createElement("div");
-
-        const label = document.createElement("label");
-        label.innerText = `${adicional.tipodeadicional} (USD ${adicional.preciodeadicional})`;
-
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = 0;
-        input.value = 0;
-        input.addEventListener("change", () => {
-            agregarAdicional(index, parseInt(input.value));
-        });
-
-        adicionalDiv.append(label, input);
-        adicionalesContainer.append(adicionalDiv);
+const limpiarCarrito = () => {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡No podrás revertir esto!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, limpiar carrito'
+    }).then(result => {
+        if (result.isConfirmed) {
+            carrito.destino = null;
+            carrito.adicionales = [];
+            actualizarCarrito();
+            Swal.fire('¡Eliminado!', 'Tu carrito ha sido limpiado.', 'success');
+        }
     });
 }
 
-function agregarAdicional(index, cantidad) {
-    if (cantidad > 0) {
-        carrito.adicionales[index] = {
-            ...adicionales[index],
-            cantidad: cantidad
-        };
+const eliminarUltimoItem = () => {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Eliminarás el último ítem del carrito.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar último ítem'
+    }).then(result => {
+        if (result.isConfirmed) {
+            if (carrito.adicionales.length > 0) {
+                carrito.adicionales.pop();
+            } else if (carrito.destino) {
+                carrito.destino = null;
+            }
+            actualizarCarrito();
+            Swal.fire('¡Eliminado!', 'El último ítem ha sido eliminado.', 'success');
+        }
+    });
+}
+
+document.getElementById("limpiar-carrito").addEventListener("click", limpiarCarrito);
+document.getElementById("eliminar-ultimo").addEventListener("click", eliminarUltimoItem);
+document.getElementById("checkout").addEventListener("click", () => {
+    if (carrito.destino || carrito.adicionales.length > 0) {
+        Swal.fire('¡Gracias por tu compra!', 'Tu orden está en camino.', 'success');
     } else {
-        carrito.adicionales.splice(index, 1);
+        Swal.fire('Carrito vacío', 'Por favor, agrega al menos un ítem.', 'warning');
     }
+});
+
+const inicializarInterfaz = () => {
+    destinos.forEach(crearCardDestino);
+    adicionales.forEach(crearCardAdicional);
     actualizarCarrito();
 }
 
-function inicializarInterfaz() {
-    destinos.forEach(crearCard);
-    mostrarAdicionales();
-    actualizarCarrito();
-}
-
-window.onload = () => {
-    inicializarInterfaz();
-};
+inicializarInterfaz();
